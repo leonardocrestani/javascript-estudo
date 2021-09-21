@@ -1,4 +1,3 @@
-const e = require('express');
 const moment = require('moment');
 const conexao = require('../infraestrutura/conexao.js');
 
