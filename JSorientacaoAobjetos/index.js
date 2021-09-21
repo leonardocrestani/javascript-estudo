@@ -1,34 +1,20 @@
 import { Cliente } from "./Cliente.js";
-import { ContaCorrente } from "./ContaCorrente.js";
+import { Diretor } from "./Funcionario/Diretor.js";
+import { Gerente } from "./Funcionario/Gerente.js";
+import { SistemaAutenticacao } from "./SistemaAutenticacao.js";
 
-const cliente1 = new Cliente("Ricardo", 13131313131);
-console.log(cliente1.cpf); // Retorna 131313131
+const diretor = new Diretor("Fabio", 10000, "3124804239");
+diretor.cadastrarSenha("1234567");
 
-const contaCorrenteRicardo = new ContaCorrente(1001, cliente1);
-contaCorrenteRicardo.deposita(1000);
-contaCorrenteRicardo.sacar(50); // Vai printar no console O valor sacado foi de 50
+const gerente = new Gerente("Paulo", 5000, "4328745823");
+gerente.cadastrarSenha("1234");
 
-const cliente2 = new Cliente("Fabio", 123123123123);
+const cliente = new Cliente("Pedro", "1287489134", "456");
 
-const contaCorrenteFabio = new ContaCorrente();
-contaCorrenteFabio.agencia = 1001;
-contaCorrenteFabio.cliente = cliente2;
+const diretorEstaLogado = SistemaAutenticacao.login(diretor, "1234567");
+const gerenteEstaLogado = SistemaAutenticacao.login(gerente, "1234");
+const clienteEstaLogado = SistemaAutenticacao.login(cliente, "456");
 
-contaCorrenteRicardo.transferir(200, contaCorrenteFabio);
-
-console.log(contaCorrenteFabio._saldo); // Retorna 200
-
-const contaCorrente3 = new ContaCorrente();
-contaCorrente3._cliente = new Cliente("Leonardo", 65464564565);
-
-console.log(contaCorrente3.cliente); // Retorna o objeto cliente da conta
-contaCorrente3.deposita(100);
-console.log(contaCorrente3.saldo); // Retorna o saldo (100) atraves do get saldo
-
-/* ContaCorrente {
-    agencia: undefined,
-    cliente: Cliente { nome: 'Leonardo', cpf: 123456789 },
-    _saldo: 0
-} */
-
-console.log(Cliente.numeroClientes); // Retorna 3 pois foram criados 3 clientes
+console.log(diretorEstaLogado);
+console.log(gerenteEstaLogado);
+console.log(clienteEstaLogado);
