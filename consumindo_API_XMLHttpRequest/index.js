@@ -19,7 +19,3 @@ xhr.addEventListener("load", () => {
   
 });
 
-
-
-
-
