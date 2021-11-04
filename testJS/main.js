@@ -1,11 +1,25 @@
-let requestURL = new URL('https://api.exchangerate.host/latest');
-requestURL.searchParams.set('base', 'USD');
-var request = new XMLHttpRequest();
-request.open('GET', requestURL);
-request.responseType = 'json';
-request.send();
 
-request.onload = function() {
-  var response = request.response;
-  console.log(response);
-}
+var xhr = new XMLHttpRequest();
+
+xhr.open("GET", "https://api.exchangerate.host/latest");
+
+xhr.send()
+
+xhr.addEventListener("load", () => {
+  if(xhr.status == 200) {
+    var resposta = xhr.responseText; // Armazenando em uma variavel
+    var respostaArrumada = JSON.parse(resposta);
+    console.log(resposta)
+    console.log(respostaArrumada);
+  }
+  else {
+    console.log(xhr.status);
+    console.log("Ocorreu um erro ao tentar fazer a requisicao");
+  }
+  
+});
+
+
+
+
+
