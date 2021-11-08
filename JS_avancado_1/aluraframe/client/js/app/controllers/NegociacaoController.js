@@ -12,7 +12,9 @@ class NegociacaoController {
 
         // cria um modelo de lista de negociacoes
         // este atributo guarda o modelo de lista que contem o array
-        this._listaNegociacoes = new ListaNegociacoes();
+        this._listaNegociacoes = new ListaNegociacoes((model) => {
+            this._negociacoesView.update(model);
+        });
         
         // instancia a view de negociacao passando o elemento alvo do html que ela vai ser exibida
         this._negociacoesView = new NegociacoesView(document.querySelector('#negociacoesView'));
@@ -21,9 +23,9 @@ class NegociacaoController {
 
         // cria o modelo de mensagem
         this._mensagem = new Mensagem();
-        // instancia a view de mensagem passando o elemento alvo do html que ela vai ser exibida
+        // instancia a view de mensagem e passa o elemento alvo do html onde essa view vai ser exibida/inserida
         this._mensagemView = new MensagemView(document.querySelector('#mensagemView'));
-        // atualiza a view de negociacao passando a lista
+        // atualiza a view de negociacao passando a mensagem neste caso inicial ele so cria o elemento no html sem conteudo
         this._mensagemView.update(this._mensagem);
     }
 
@@ -43,12 +45,11 @@ class NegociacaoController {
         // cria uma negociacao a partir do metodo da classe controller
         let negociacao = this._criaNegociacao(data);
 
-        // apos criar a negociacao ele adiona ela no array de negociacoes
+        // apos criar a negociacao ele adiona ela no array de negociacoes e atualiza nossa view automaticamente
+        // toda vez que adicionar na lista ele executa o update da view com nossa implementacao de armadilha
         this._listaNegociacoes.adiciona(negociacao);
         console.log(this._listaNegociacoes.negociacoes);
         
-        // atualiza nossa view de negociacao com os elementos do array
-        this._negociacoesView.update(this._listaNegociacoes);
         // seta a mensagem que deve ser exibida quando criar uma negociacao
         this._mensagem.texto = "Negociacao criada com sucesso !"
         //atualiza noss view de mensagem com essa mensagem
@@ -56,6 +57,17 @@ class NegociacaoController {
 
         // reseta os campos do formulario
         this._limpaFormulario();
+    }
+
+    // apaga a lista de negociacoes
+    apagaLista() {
+        // como o botao de apagar nao esta no formulario nao e necessario previnir o evento default
+        // apaga a lista utilizando o metodo implementado no model
+        this._listaNegociacoes.apagaLista();
+        // setando uma mensagem para o elemento mensagem
+        this._mensagem.texto = "Lista de negociacoes apagada"
+        // atualiza e mostra a mensagem na tela utilizando a view de mensagem
+        this._mensagemView.update(this._mensagem);
     }
 
     // cria um objeto negociacao

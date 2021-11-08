@@ -1,7 +1,8 @@
 class Mensagem {
 
     // Classe modelo menasgem
-    // Esta classe recebe e mostra um mensagem modelo de exibicao de mensagem
+    // Esta classe recebe e armazena uma mensagem no parametro texto
+    // O conteudo desta classe vai ser apenas a mensagem texto
     constructor(texto="") {
         this._texto = texto;
     }
