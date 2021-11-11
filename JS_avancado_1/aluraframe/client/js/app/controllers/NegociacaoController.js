@@ -10,23 +10,20 @@ class NegociacaoController {
         this._inputQuantidade = document.querySelector('#quantidade');
         this._inputValor = document.querySelector('#valor');
 
-        // cria um modelo de lista de negociacoes
-        // este atributo guarda o modelo de lista que contem o array
-        this._listaNegociacoes = new ListaNegociacoes((model) => {
-            this._negociacoesView.update(model);
-        });
-        
+
         // instancia a view de negociacao passando o elemento alvo do html que ela vai ser exibida
         this._negociacoesView = new NegociacoesView(document.querySelector('#negociacoesView'));
-        // atualiza a view de negociacao passando a lista
-        this._negociacoesView.update(this._listaNegociacoes);
-
-        // cria o modelo de mensagem
-        this._mensagem = new Mensagem();
         // instancia a view de mensagem e passa o elemento alvo do html onde essa view vai ser exibida/inserida
         this._mensagemView = new MensagemView(document.querySelector('#mensagemView'));
-        // atualiza a view de negociacao passando a mensagem neste caso inicial ele so cria o elemento no html sem conteudo
-        this._mensagemView.update(this._mensagem);
+
+        // cria um modelo de lista de negociacoes como proxy
+        // este atributo guarda o modelo da lista de negociacoes
+        this._listaNegociacoes = new Bind(new ListaNegociacoes(), this._negociacoesView, "adiciona", "apagaLista", "ordena");
+        // cria o modelo de mensagem
+        this._mensagem = new Bind(new Mensagem(), this._mensagemView, "texto");
+
+        this._selectTag = document.querySelector('#negociacoesLista');
+
     }
 
     adiciona(event) {
@@ -51,12 +48,33 @@ class NegociacaoController {
         console.log(this._listaNegociacoes.negociacoes);
         
         // seta a mensagem que deve ser exibida quando criar uma negociacao
-        this._mensagem.texto = "Negociacao criada com sucesso !"
-        //atualiza noss view de mensagem com essa mensagem
-        this._mensagemView.update(this._mensagem);
+        this._mensagem.texto = "Negociacao adicionada com sucesso !"
 
         // reseta os campos do formulario
         this._limpaFormulario();
+    }
+
+    importaNegociacoes() {
+        let service = new NegociacaoService();
+
+        let promiseSemana = service.obterNegociacoesDaSemana();
+        let promiseSemanaPassada = service.obterNegociacoesDaSemanaPassada();
+        let promiseSemanaRetrasada = service.obterNegociacoesDaSemanaRetrasada();
+
+        Promise.all([promiseSemana, promiseSemanaPassada, promiseSemanaRetrasada])
+        .then((negociacoes) => {
+            console.log(negociacoes);
+            let arrayUnico = negociacoes.reduce((arrayUnico, array) => {
+                return arrayUnico.concat(array);
+            }, []);
+            arrayUnico.forEach((negociacao) => {
+                this._listaNegociacoes.adiciona(negociacao);
+                this._mensagem.texto = "Negociacoes obtidas com sucesso";
+            });
+        })
+        .catch((erro) => {
+            this._mensagem.texto = erro;
+        });
     }
 
     // apaga a lista de negociacoes
@@ -66,8 +84,6 @@ class NegociacaoController {
         this._listaNegociacoes.apagaLista();
         // setando uma mensagem para o elemento mensagem
         this._mensagem.texto = "Lista de negociacoes apagada"
-        // atualiza e mostra a mensagem na tela utilizando a view de mensagem
-        this._mensagemView.update(this._mensagem);
     }
 
     // cria um objeto negociacao
@@ -85,6 +101,15 @@ class NegociacaoController {
         this._inputQuantidade.value = 1;
         this._inputValor.value = 0.0;
         this._inputData.focus();
+    }
+
+    ordenaPelaLista() {
+        let coluna = this._selectTag.options[this._selectTag.selectedIndex].value;
+        this._listaNegociacoes.ordena((a, b) => a[coluna] - b[coluna]);
+    }
+
+    ordena(coluna) {
+        this._listaNegociacoes.ordena((a, b) => a[coluna] - b[coluna]);
     }
 
 }

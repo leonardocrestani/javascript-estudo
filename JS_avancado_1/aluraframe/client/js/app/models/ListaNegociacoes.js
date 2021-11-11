@@ -3,9 +3,8 @@ class ListaNegociacoes {
     // Classe modelo lista de negociacoes
     // Esta classe e um modelo de listas ela guarda valores de negociacoes e calcula o volume total
     // Classe de listas apenas de negociacoes tem seus comportamento especificos
-    constructor(armadilha) {
+    constructor() {
         this._negociacoes = [];
-        this._armadilha = armadilha;
     }
 
     get negociacoes() {
@@ -14,7 +13,6 @@ class ListaNegociacoes {
 
     adiciona(negociacao) {
         this._negociacoes.push(negociacao);
-        this._armadilha(this);
     }
 
     apagaLista() {
@@ -23,7 +21,6 @@ class ListaNegociacoes {
         }
         else {
             this._negociacoes = [];
-            this._armadilha(this);
         }
     }
 
@@ -31,6 +28,10 @@ class ListaNegociacoes {
         return this._negociacoes.reduce(function(total, negociacao) {
             return total += negociacao.volume;
         }, 0.0);
+    }
+
+    ordena(criterio) {
+        this._negociacoes.sort(criterio);        
     }
 
 }
