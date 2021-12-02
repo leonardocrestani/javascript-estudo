@@ -25,10 +25,10 @@ class DateHelper {
 
     static dataParaTexto(data) {
         if(data.getDate() < 10) {
-            return `0${data.getDate()}/${data.getMonth()}/${data.getFullYear()}`;
+            return `0${data.getDate()}/${data.getMonth()+1}/${data.getFullYear()}`;
         }
         else {
-            return `${data.getDate()}/${data.getMonth()}/${data.getFullYear()}`;
+            return `${data.getDate()}/${data.getMonth()+1}/${data.getFullYear()}`;
         }
         
     }

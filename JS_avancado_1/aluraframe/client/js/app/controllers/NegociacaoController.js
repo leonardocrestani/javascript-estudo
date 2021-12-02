@@ -19,39 +19,55 @@ class NegociacaoController {
         // cria um modelo de lista de negociacoes como proxy
         // este atributo guarda o modelo da lista de negociacoes
         this._listaNegociacoes = new Bind(new ListaNegociacoes(), this._negociacoesView, "adiciona", "apagaLista", "ordena");
-        // cria o modelo de mensagem
+        // cria o modelo(proxy) de mensagem
         this._mensagem = new Bind(new Mensagem(), this._mensagemView, "texto");
-
         this._selectTag = document.querySelector('#negociacoesLista');
 
+        this._init();
+
+    }
+
+    // Funcao init serve para que este codigo que precisa ser executado no construtor da classe fique isolado
+    // A funcao init e chamado no construtor
+    _init() {
+        // conexao com o banco de dados para toda vez que carregar a pagina ele pegar as negociacoes do banco e mostrar na tabela
+        // faz uma chamada para pegar a conexao e passa ela para o dao que varre o banco e devolve as negociacoes
+        ConnectionFactory.getConnection()
+        .then((connection) => {
+            new NegociacaoDao(connection)
+            .listaTodos()
+            .then((negociacoes) => {
+                negociacoes.forEach((negociacao) => {
+                    this._listaNegociacoes.adiciona(negociacao);
+                });
+            });
+        })
+        .catch(erro => {
+            console.log(erro);
+            this._mensagem.texto = erro;
+        });
+
+        setInterval(() => {
+            this.importaNegociacoes();
+        }, 3000);
     }
 
     adiciona(event) {
         // previne o evento padrao do formulario de recarregar a pagina
         event.preventDefault();
 
-        // instanciacao do helper de data para para manipular a data que vem do html
-        // Pega a data que vem como "2021-11-01" e transforma em ["2021", "11", "01"] com o metodo textoParaData do helper
-        let arrayData = DateHelper.textoParaData(this._inputData.value);
-        console.log(arrayData);
+        let negociacao = this._criaNegociacao();
 
-        // Aqui ocorre o spread assim ele passa como parametro para Date(2021, 10, 01) e cria a data
-        let data = new Date(...arrayData);
-        console.log(data); // Mon Nov 01 2021 00:00:00 GMT-0300
-
-        // cria uma negociacao a partir do metodo da classe controller
-        let negociacao = this._criaNegociacao(data);
-
-        // apos criar a negociacao ele adiona ela no array de negociacoes e atualiza nossa view automaticamente
-        // toda vez que adicionar na lista ele executa o update da view com nossa implementacao de armadilha
-        this._listaNegociacoes.adiciona(negociacao);
-        console.log(this._listaNegociacoes.negociacoes);
-        
-        // seta a mensagem que deve ser exibida quando criar uma negociacao
-        this._mensagem.texto = "Negociacao adicionada com sucesso !"
-
-        // reseta os campos do formulario
-        this._limpaFormulario();
+        new NegociacaoService()
+        .cadastra(negociacao)
+        .then((mensagemSucesso => {
+            this._listaNegociacoes.adiciona(negociacao);
+            this._mensagem.texto = mensagemSucesso;
+            this._limpaFormulario();
+        }))
+        .catch(erro => {
+            this._mensagem.texto = erro;
+        });
     }
 
     importaNegociacoes() {
@@ -63,11 +79,18 @@ class NegociacaoController {
 
         Promise.all([promiseSemana, promiseSemanaPassada, promiseSemanaRetrasada])
         .then((negociacoes) => {
-            console.log(negociacoes);
             let arrayUnico = negociacoes.reduce((arrayUnico, array) => {
                 return arrayUnico.concat(array);
             }, []);
-            arrayUnico.forEach((negociacao) => {
+            let arrayFiltrado = arrayUnico.filter((negociacao) => {
+                return !this._listaNegociacoes.negociacoes.some(negociacaoExistente => {
+                    return JSON.stringify(negociacaoExistente) == JSON.stringify(negociacao);
+                });
+            });
+            return arrayFiltrado;
+        })
+        .then((negociacoes) => {
+            negociacoes.forEach((negociacao) => {
                 this._listaNegociacoes.adiciona(negociacao);
                 this._mensagem.texto = "Negociacoes obtidas com sucesso";
             });
@@ -79,6 +102,16 @@ class NegociacaoController {
 
     // apaga a lista de negociacoes
     apagaLista() {
+        ConnectionFactory.getConnection()
+        .then((connection) => {
+            new NegociacaoDao(connection).apagaTodos()
+            .then((mensagemSucesso) => {
+                this._mensagem.texto = mensagemSucesso;
+            });
+        })
+        .catch(erro => {
+            this._mensagem.texto = erro;
+        });
         // como o botao de apagar nao esta no formulario nao e necessario previnir o evento default
         // apaga a lista utilizando o metodo implementado no model
         this._listaNegociacoes.apagaLista();
@@ -87,11 +120,13 @@ class NegociacaoController {
     }
 
     // cria um objeto negociacao
-    _criaNegociacao(data) {
+    _criaNegociacao() {
+        let arrayData = DateHelper.textoParaData(this._inputData.value);
+        let data = new Date(...arrayData);
         return new Negociacao(
             data,
-            this._inputQuantidade.value,
-            this._inputValor.value
+            parseInt(this._inputQuantidade.value),
+            parseFloat(this._inputValor.value)
         );
     }
 

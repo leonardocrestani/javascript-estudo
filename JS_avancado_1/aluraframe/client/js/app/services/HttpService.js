@@ -1,21 +1,28 @@
 class HttpService {
 
     get(url) {
-        return new Promise((resolve, reject) => {
-            let xhr = new XMLHttpRequest();
-            xhr.open("GET", url);
-            xhr.send();
-            xhr.onreadystatechange = () => {
-                if(xhr.readyState == 4) {
-                    if(xhr.status == 200) {
-                        resolve(JSON.parse(xhr.responseText));
+        return fetch(url)
+                .then((res) => {
+                    if(res.ok) {
+                        return res.json();
                     }
                     else {
-                        reject(xhr.responseText);
+                        throw new Error(res.statusText);
                     }
-                }
+                });
+    }
+
+    post(url, dado) {
+        return fetch(url, {
+            headers: {'Content-type': 'application/json'},
+            method: 'POST',
+            body: JSON.stringify(dado)
+        })
+        .then((res) => {
+            if(!res.ok) {
+                throw new Error(res.statusText);
             }
-        }); 
+        });
     }
 
 }

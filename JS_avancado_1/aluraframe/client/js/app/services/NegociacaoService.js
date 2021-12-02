@@ -56,7 +56,33 @@ class NegociacaoService {
                 reject("Nao foi possivel obter as negociacoes da semana");
             });
         });
-
     }
 
+    cadastra(negociacao) {
+        return ConnectionFactory.getConnection()
+        .then((connection) => {
+            return new NegociacaoDao(connection)
+        })
+        .then((dao) => {
+            dao.adiciona(negociacao);
+        })
+        .then(() => {
+            return "Negociacao adicionada com sucesso";
+        })
+        .catch(() => {
+            throw new Error("Nao foi possivel adicionar a negociacao");
+        });
+    }
+
+    lista() {
+        return ConnectionFactory.getConnection()
+        .then((connection) => {
+            return new NegociacaoDao(connection)
+            .listaTodos();
+        })
+        .catch((erro) => {
+            throw new Error("Nao foi possivel listar as negocioacoes");
+        });
+    }
+    
 }
