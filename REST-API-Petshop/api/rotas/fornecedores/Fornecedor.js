@@ -1,4 +1,7 @@
 const TabelaFornecedor = require('./ModeloTabelaFornecedor.js');
+const NaoEncontrado = require('../../erros/NaoEncontrado.js');
+const CampoInvalido = require('../../erros/CampoInvalido.js');
+const DadosNaoFornecidos = require('../../erros/DadosNaoFornecidos.js');
 
 class Fornecedor {
     constructor({ id, empresa, email, categoria, dataCriacao, dataAtualizacao }) {
@@ -12,8 +15,8 @@ class Fornecedor {
 
     // comunica com o banco de dados e salva novo fornecedor nele
     async criar(fornecedor) {
+        this.validarCamposPost();
         const resultado = await TabelaFornecedor.create(fornecedor);
-
         // como id, dataCriacao e dataAtualizacao so foram criados na hora do create no banco
         // vamos pegar eles agora
         this.id = resultado.id;
@@ -25,7 +28,7 @@ class Fornecedor {
     async listarPeloId() {
         const fornecedorEncontrado = await TabelaFornecedor.findOne({where: {id: this.id}});
         if(!fornecedorEncontrado) {
-            throw new Error(`Fornecedor com o id: ${this.id} nao encontrado`);
+            throw new NaoEncontrado(this.id);
         }
         else {
             this.empresa = fornecedorEncontrado.empresa;
@@ -39,7 +42,7 @@ class Fornecedor {
     async atualiza() {
         const fornecedorEncontrado = await TabelaFornecedor.findOne({where: {id: this.id}});
         if(!fornecedorEncontrado) {
-            throw new Error(`Fornecedor com o id: ${this.id} nao encontrado`);
+            throw new NaoEncontrado(this.id);
         }
         else {
             const campos = ['empresa', 'email', 'categoria'];
@@ -51,12 +54,28 @@ class Fornecedor {
                 }
             })
             if(Object.keys(dadosParaAtualizar).length === 0) {
-                throw new Error("Nao foram fornecidos dados para atualizar");
+                throw new DadosNaoFornecidos();
             }
             else {
                 await TabelaFornecedor.update(dadosParaAtualizar, {where: {id: this.id}});
             }
         }
+    }
+
+    async remover() {
+        TabelaFornecedor.destroy({where: {id: this.id}});
+    }
+
+    validarCamposPost() {
+        const campos = ['empresa', 'email', 'categoria'];
+        // executar um loop para verificar os campos
+        campos.forEach((campo) => {
+            // pegar o valor do campo empresa, email e categoria do objeto atual (this[campo])
+            const valor = this[campo];
+            if(typeof valor !== 'string' || valor.length === 0) {
+                throw new CampoInvalido(campo);
+            }
+        })
     }
 }
 

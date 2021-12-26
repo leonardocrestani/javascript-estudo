@@ -1,6 +1,6 @@
-const ModeloTabela = require('../rotas/fornecedores/ModeloTabelaFornecedor.js');
+const TabelaFornecedor = require('../rotas/fornecedores/ModeloTabelaFornecedor.js');
 
-ModeloTabela.sync()
+TabelaFornecedor.sync()
 .then(() => {
     console.log("Tabela criada com sucesso");
 })
