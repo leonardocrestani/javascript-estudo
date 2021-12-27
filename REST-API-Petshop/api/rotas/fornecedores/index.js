@@ -3,11 +3,12 @@ const roteador = express.Router();
 const Tabela = require('../fornecedores/ModeloTabelaFornecedor.js');
 // esta recebendo o nome da tabela 'fornecedor'
 const Fornecedor = require('../fornecedores/Fornecedor.js');
+const { raw } = require('body-parser');
 const SerializadorFornecedor = require('../../Serializador.js').SerializadorFornecedor;
 
 
 roteador.get('/', async (req, res) => {
-    const resultados = await Tabela.findAll();
+    const resultados = await Tabela.findAll({raw: true});
     const serializador = new SerializadorFornecedor(res.getHeader('Content-Type'));
     res.status(200);
     res.send(serializador.serializar(resultados));
@@ -33,7 +34,7 @@ roteador.get('/:idFornecedor', async (req, res, next) => {
         const id = req.params.idFornecedor;
         const fornecedor = new Fornecedor({ id: id });
         await fornecedor.listarPeloId();
-        const serializador = new SerializadorFornecedor(res.getHeader('Content-Type'));
+        const serializador = new SerializadorFornecedor(res.getHeader('Content-Type'), ['email', 'dataCriacao', 'dataAtualizacao']);
         res.status(200);
         res.send(serializador.serializar(fornecedor));
     }

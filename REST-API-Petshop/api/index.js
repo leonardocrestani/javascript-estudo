@@ -11,6 +11,7 @@ const DadosNaoFornecidos = require('./erros/DadosNaoFornecidos.js');
 const ValorNaoSuportado = require('./erros/ValorNaoSuportado.js');
 
 const formatosAceitos = require('./Serializador.js').formatosAceitos;
+const SerializadorErro = require('./Serializador.js').SerializadorErro;
 
 app.use(bodyParser.json());
 
@@ -41,9 +42,8 @@ app.use((erro, req, res, next) => {
     if(erro instanceof ValorNaoSuportado) {
         res.status(406);
     }
-    res.send(JSON.stringify({
-        mensagem: erro.message
-    }));
+    const serializador = new SerializadorErro(res.getHeader('Content-Type'));
+    res.send(serializador.serializar({mensagem: erro.message}));
 });
 
 app.listen(config.get('api.porta'), () => {
