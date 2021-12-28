@@ -2,12 +2,15 @@ const express = require('express');
 const router = express.Router();
 const TabelaPessoa = require('../pessoas/ModeloTabelaPessoas.js');
 const Pessoa = require('./Pessoa.js');
-const InformacoesIncorretas = require('../erros/InformacoesIncorretas.js');
-const UsuarioJaCadastrado = require('../erros/UsuarioJaCadastrado.js');
+const InformacoesIncorretas = require('../../erros/InformacoesIncorretas.js');
+const UsuarioJaCadastrado = require('../../erros/UsuarioJaCadastrado.js');
+const SerializadorPessoas = require('../../Serializador.js').SerializadorPessoas;
 
 router.get('/', async (req, res) => {
-    const resultados = await TabelaPessoa.findAll();
-    res.send(JSON.stringify(resultados)); 
+    // opcao raw true traz os dados em array normal
+    const resultados = await TabelaPessoa.findAll({raw: true});
+    let serializador = new SerializadorPessoas(res.getHeader('Content-Type'));
+    res.send(serializador.serializar(resultados));
 });
 
 router.post('/cadastro', async (req, res, next) => {
@@ -15,6 +18,7 @@ router.post('/cadastro', async (req, res, next) => {
         const dados = req.body;
         const pessoa = new Pessoa(dados);
         let pessoaBanco = await TabelaPessoa.findAll();
+        let serializador = new SerializadorPessoas(res.getHeader('Content-Type'));
         if(Array.isArray(pessoa)) {
             pessoaBanco = pessoa.map((item) => {
                 return item.dataValues;
@@ -29,7 +33,7 @@ router.post('/cadastro', async (req, res, next) => {
         else {
             await pessoa.adiciona(pessoa);
             res.status(201);
-            res.send(JSON.stringify(pessoa));
+            res.send(serializador.serializar(pessoa));
         }
     }
     catch(erro) {
@@ -43,6 +47,7 @@ router.post('/login', async (req, res, next) => {
         const dados = req.body;
         const pessoa = new Pessoa(dados);
         let pessoaBanco = await TabelaPessoa.findAll();
+        let serializador = new SerializadorPessoas(res.getHeader('Content-Type'));
         if(Array.isArray(pessoa)) {
             pessoaBanco = pessoa.map((item) => {
                 return item.dataValues;
@@ -55,9 +60,8 @@ router.post('/login', async (req, res, next) => {
             throw new InformacoesIncorretas();
         }
         else {
-            console.log("acesso concedido");
             res.status(200);
-            res.send(JSON.stringify(pessoa));
+            res.end();
         }
     }
     catch(erro) {

@@ -3,11 +3,30 @@ const app = express();
 const bodyParser = require('body-parser');
 const config = require('config');
 const router = require('./rotas/pessoas/index.js');
-const InformacoesIncorretas = require('./rotas/erros/InformacoesIncorretas.js');
-const UsuarioJaCadastrado = require('./rotas/erros/UsuarioJaCadastrado.js');
+const InformacoesIncorretas = require('./erros/InformacoesIncorretas.js');
+const UsuarioJaCadastrado = require('./erros/UsuarioJaCadastrado.js');
+const formatosAceitos = require('./Serializador.js').formatosAceitos;
 
 
 app.use(bodyParser.json());
+
+app.use((req, res, next) => {
+    let formatoRequisitado = req.header('Accept');
+    if(formatoRequisitado === '*/*') {
+        formatoRequisitado = 'application/json'
+    }
+    let existe = formatosAceitos.some((formato) => {
+        return formato === formatoRequisitado;
+    });
+    if(!existe) {
+        res.status(406);
+        res.end()
+    }
+    else {
+        res.setHeader('Content-Type', formatoRequisitado);
+        next();
+    }
+});
 
 app.use('/acessos', router);
 
