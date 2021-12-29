@@ -1,3 +1,4 @@
+const InformacoesIncorretas = require('../../erros/InformacoesIncorretas.js');
 const TabelaPessoa = require('./ModeloTabelaPessoas.js');
 
 class Pessoa {
@@ -20,18 +21,17 @@ class Pessoa {
         this.dataAtualizacao = resultadoInsercao.dataAtualizacao;
     }
 
-    async listaPorId() {
-        const pessoaEncontrada = await TabelaPessoa.findOne({where: {id: this.id}});
+    async verificaExistencia() {
+        const pessoaEncontrada = await TabelaPessoa.findOne({where: {email: this.email, senha: this.senha}});
         if(!pessoaEncontrada) {
-            throw new Error("Pessoa não encontrada no banco de dados");
+            throw new InformacoesIncorretas();
         }
         else {
-            this.nome = pessoaEncontrada.nome,
-            this.sobrenome = pessoaEncontrada.sobrenome,
-            this.email = pessoaEncontrada.email,
-            this.senha = pessoaEncontrada.senha,
-            this.dataCriacao = pessoaEncontrada.dataCriacao,
-            this.dataAtualizacao = pessoaEncontrada.dataAtualizacao
+            this.id = pessoaEncontrada.id;
+            this.nome = pessoaEncontrada.nome;
+            this.sobrenome = pessoaEncontrada.sobrenome;
+            this.dataCriacao = pessoaEncontrada.dataCriacao;
+            this.dataAtualizacao = pessoaEncontrada.dataAtualizacao;
         }
     }
 
