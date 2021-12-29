@@ -13,13 +13,12 @@ router.get('/', async (req, res) => {
     res.send(serializador.serializar(resultados));
 });
 
-router.get('/login/:emailPessoa/:senhaPessoa', async (req, res, next) => {
+/*router.get('/login/:emailPessoa/:senhaPessoa', async (req, res, next) => {
     try {
         const email = req.params.emailPessoa;
         const senha = req.params.senhaPessoa;
         const pessoa = new Pessoa({email: email, senha: senha});
         await pessoa.verificaExistencia();
-        console.log(pessoa);
         let serializador = new SerializadorPessoas(res.getHeader('Content-Type'));
         res.status(200);
         res.send(serializador.serializar(pessoa));
@@ -27,7 +26,7 @@ router.get('/login/:emailPessoa/:senhaPessoa', async (req, res, next) => {
     catch(erro) {
         next(erro);
     }
-});
+});*/
 
 router.post('/cadastro', async (req, res, next) => {
     try {
@@ -62,22 +61,10 @@ router.post('/login', async (req, res, next) => {
     try {
         const dados = req.body;
         const pessoa = new Pessoa(dados);
-        let pessoaBanco = await TabelaPessoa.findAll();
-        if(Array.isArray(pessoa)) {
-            pessoaBanco = pessoa.map((item) => {
-                return item.dataValues;
-            });
-        }
-        let existe = pessoaBanco.some((pessoa) => {
-            return pessoa.email === dados.email && pessoa.senha === dados.senha;
-        });
-        if(!existe) {
-            throw new InformacoesIncorretas();
-        }
-        else {
-            res.status(200);
-            res.end();
-        }
+        await pessoa.verificaExistencia();
+        let serializador = new SerializadorPessoas(res.getHeader('Content-Type'));
+        res.status(200);
+        res.send(serializador.serializar(pessoa));
     }
     catch(erro) {
         next(erro);
