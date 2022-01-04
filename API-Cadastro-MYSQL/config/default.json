@@ -1,0 +1,16 @@
+{
+    "api": {
+        "porta": 3000
+    },
+    "banco-de-dados": {
+        "tipo": "mysql",
+        "nome": "cadastro",
+        "usuario": "root",
+        "senha": "admin",
+        "host": "127.0.0.1",
+        "porta": "3306",
+        "database": {
+            "cadastro": "cadastro"
+        }
+    }
+}
