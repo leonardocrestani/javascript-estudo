@@ -5,7 +5,8 @@ const Tabela = require('../fornecedores/ModeloTabelaFornecedor.js');
 const Fornecedor = require('../fornecedores/Fornecedor.js');
 const { raw } = require('body-parser');
 const SerializadorFornecedor = require('../../Serializador.js').SerializadorFornecedor;
-
+// pegando as rotas de produtos do fornecedor
+const roteadorProdutos = require('./produtos/index.js');
 
 roteador.get('/', async (req, res) => {
     const resultados = await Tabela.findAll({raw: true});
@@ -71,5 +72,7 @@ roteador.delete('/:idFornecedor', async (req, res, next) => {
         next(erro);
     }
 });
+
+roteador.use('/:idFornecedor/produtos', roteadorProdutos);
 
 module.exports = roteador;

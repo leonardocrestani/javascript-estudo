@@ -17,15 +17,18 @@ app.use(bodyParser.json());
 
 app.use((req, res, next) => {
     let formatoRequisitado = req.header('Accept');
-    if(formatosAceitos.indexOf(formatoRequisitado) === -1) {
+    if(formatoRequisitado === '*/*') {
+        formatoRequisitado = 'application/json'
+    }
+    let existe = formatosAceitos.some((formato) => {
+        return formato === formatoRequisitado;
+    });
+    if(!existe) {
         res.status(406);
-        res.end();
+        res.end()
     }
     else {
-        if(formatoRequisitado === '*/*') {
-            formatoRequisitado = 'application/json';
-        }
-        res.setHeader('Content-type', formatoRequisitado);
+        res.setHeader('Content-Type', formatoRequisitado);
         next();
     }
 });
