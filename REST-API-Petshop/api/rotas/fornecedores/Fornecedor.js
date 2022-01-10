@@ -28,7 +28,7 @@ class Fornecedor {
     async listarPeloId() {
         const fornecedorEncontrado = await TabelaFornecedor.findOne({where: {id: this.id}});
         if(!fornecedorEncontrado) {
-            throw new NaoEncontrado(this.id);
+            throw new NaoEncontrado(this.id, 'Fornecedor');
         }
         else {
             this.empresa = fornecedorEncontrado.empresa;
@@ -42,7 +42,7 @@ class Fornecedor {
     async atualiza() {
         const fornecedorEncontrado = await TabelaFornecedor.findOne({where: {id: this.id}});
         if(!fornecedorEncontrado) {
-            throw new NaoEncontrado(this.id);
+            throw new NaoEncontrado(this.id, 'Fornecedor');
         }
         else {
             const campos = ['empresa', 'email', 'categoria'];

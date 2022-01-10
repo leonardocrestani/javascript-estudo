@@ -8,6 +8,13 @@ const SerializadorFornecedor = require('../../Serializador.js').SerializadorForn
 // pegando as rotas de produtos do fornecedor
 const roteadorProdutos = require('./produtos/index.js');
 
+roteador.options('/', (req, res) => {
+    res.set('Access-Control-Allow-Methods', 'GET, POST');
+    res.set('Access-Control-Allow-Headers', 'Content-Type');
+    res.status(204);
+    res.end();
+});
+
 roteador.get('/', async (req, res) => {
     const resultados = await Tabela.findAll({raw: true});
     const serializador = new SerializadorFornecedor(res.getHeader('Content-Type'));
@@ -28,6 +35,13 @@ roteador.post('/', async (req, res, next) => {
     catch(erro) {
         next(erro);
    }
+});
+
+roteador.options('/:idFornecedor', (req, res) => {
+    res.set('Access-Control-Allow-Methods', 'GET, PUT, DELETE');
+    res.set('Access-Control-Allow-Headers', 'Content-Type');
+    res.status(204);
+    res.end();
 });
 
 roteador.get('/:idFornecedor', async (req, res, next) => { 
@@ -73,6 +87,19 @@ roteador.delete('/:idFornecedor', async (req, res, next) => {
     }
 });
 
-roteador.use('/:idFornecedor/produtos', roteadorProdutos);
+const verificarFornecedor = async (req, res, next) => {
+    try {
+        const id = req.params.idFornecedor;
+        const fornecedor = new Fornecedor({id: id});
+        await fornecedor.listarPeloId();
+        req.fornecedor = fornecedor;
+        next();
+    }
+    catch(erro) {
+        next(erro);
+    }
+}
+
+roteador.use('/:idFornecedor/produtos', verificarFornecedor, roteadorProdutos);
 
 module.exports = roteador;

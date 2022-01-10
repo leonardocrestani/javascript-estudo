@@ -1,4 +1,6 @@
 const ProdutoDAO = require('./ProdutoDAO.js');
+const CampoInvalido = require('../../../erros/CampoInvalido.js');
+const DadosNaoFornecidos = require('../../../erros/DadosNaoFornecidos.js');
 
 class Produto {
     constructor({id, titulo, preco, estoque, fornecedorId, dataCriacao, dataAtualizacao}) {
@@ -13,13 +15,13 @@ class Produto {
 
     validar() {
         if(typeof this.titulo !== 'string' || this.titulo.length === 0) {
-            throw new Error("O campo 'titulo' esta invalido");
+            throw new CampoInvalido('titulo');
         }
         if(typeof this.preco !== 'number' || this.preco === 0) {
-            throw new Error("O campo 'preco' esta invalido");
+            throw new CampoInvalido('preco');
         }
         if(typeof this.estoque !== 'number') {
-            throw new Error("O campo 'estoque' esta invalido");
+            throw new CampoInvalido('estoque');
         }
     }
 
@@ -39,6 +41,37 @@ class Produto {
 
     async deletar() {
         await ProdutoDAO.deletar(this.id, this.fornecedor);
+    }
+
+    async listarPeloId() {
+        const produto = await ProdutoDAO.listarPeloId(this.id, this.fornecedor);
+        this.titulo = produto.titulo;
+        this.preco = produto.preco;
+        this.estoque = produto.estoque;
+        this.dataCriacao = produto.dataCriacao;
+        this.dataAtualizacao = produto.dataAtualizacao;
+    }
+
+    async atualizar() {
+        const dadosParaAtualizar = {}
+        // verificacao para saber se foram fornecidos dados para atualizar o produto
+        if(typeof this.titulo === 'string' && this.titulo.length > 0) {
+            dadosParaAtualizar.titulo = this.titulo;
+        }
+        if(typeof this.preco === 'number' && this.preco > 0) {
+            dadosParaAtualizar.preco = this.preco;
+        }
+        if(typeof this.estoque === 'number') {
+            dadosParaAtualizar.estoque = this.estoque;
+        }
+        if(Object.keys(dadosParaAtualizar).length === 0) {
+            throw new DadosNaoFornecidos();
+        }
+        return ProdutoDAO.atualizar(this.id, this.fornecedor, dadosParaAtualizar);
+    }
+
+    diminuirEstoque() {
+        return ProdutoDAO.diminuirEstoque(this.id, this.fornecedor, 'estoque', this.estoque);
     }
 }
 
